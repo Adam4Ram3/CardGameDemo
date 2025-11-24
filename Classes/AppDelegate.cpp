@@ -24,7 +24,7 @@
 
 #include "AppDelegate.h"
 #include "controllers/GameController.h"
-#include "views/LevelSelectView.h" // ����ͷ�ļ�
+#include "views/LevelSelectView.h" 
 // #define USE_AUDIO_ENGINE 1
 // #define USE_SIMPLE_AUDIO_ENGINE 1
 
