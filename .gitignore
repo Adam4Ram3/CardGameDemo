@@ -1,0 +1,25 @@
+# --- 忽略引擎源码 ---
+cocos2d/
+
+# --- Visual Studio 编译垃圾 ---
+.vs/
+Debug/
+Release/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.opensdf
+*.sdf
+*.ipch
+*.ap
+*.tlog
+*.log
+*.idb
+*.pdb
+
+# --- 系统文件 ---
+.DS_Store
+Thumbs.db
