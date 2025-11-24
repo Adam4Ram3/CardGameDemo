@@ -1,38 +1,64 @@
+/**
+ * @file LevelSelectView.cpp
+ * @brief ¹Ø¿¨Ñ¡Ôñ³¡¾°ÊµÏÖ - ÓÎÏ·µÄÈë¿Ú½çÃæ
+ * 
+ * @details Ö°Ôð£º
+ * 1. **Õ¹Ê¾Èë¿Ú**£º×÷ÎªÓÎÏ·Æô¶¯ºóµÄµÚÒ»¸ö³¡¾°£¬Õ¹Ê¾¹Ø¿¨ÁÐ±í
+ * 2. **ÓÃ»§½»»¥**£ºÌá¹©°´Å¥¹©Íæ¼ÒÑ¡Ôñ¹Ø¿¨
+ * 3. **Á÷³ÌÌø×ª**£º²¶»ñÑ¡ÔñÊÂ¼þ£¬µ÷ÓÃ GameController Æô¶¯¾ßÌå¹Ø¿¨
+ * 
+ * @note Éè¼Æ·ç¸ñ£º
+ * - ²ÉÓÃ¼«¼òÉè¼Æ£ºÉî»ÒÉ«±³¾° + °×É«ÎÄ×Ö
+ * - Ê¹ÓÃ CocosGUI µÄ Button ×é¼þ£¬×Ô´øµã»÷Ð§¹û
+ */
 #include "views/LevelSelectView.h"
-#include "controllers/GameController.h" // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ startGame
-#include "ui/CocosGUI.h" // ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½
+#include "controllers/GameController.h"
+#include "ui/CocosGUI.h"
 
 using namespace cocos2d;
 using namespace cocos2d::ui;
 
+/**
+ * @brief ³õÊ¼»¯³¡¾°
+ * @return bool ³õÊ¼»¯ÊÇ·ñ³É¹¦
+ * 
+ * @details ²¼¾ÖÂß¼­£º
+ * 1. **±³¾°**£º´´½¨È«ÆÁÉî»ÒÉ« LayerColor
+ * 2. **±êÌâ**£ºÆÁÄ»ÉÏ·½ 70% ´¦ÏÔÊ¾ "SELECT LEVEL"
+ * 3. **°´Å¥**£ºÆÁÄ»ÖÐÑëÏÔÊ¾ "Level 1" °´Å¥
+ *    - Ê¹ÓÃ Lambda ±í´ïÊ½°ó¶¨µã»÷ÊÂ¼þ
+ *    - µã»÷ºóµ÷ÓÃ onLevelSelected(1)
+ */
 bool LevelSelectView::init() {
+    // µ÷ÓÃ¸¸Àà Scene µÄ init ·½·¨£¬È·±£»ù´¡³¡¾°¹¦ÄÜÕý³£
     if (!Scene::init()) return false;
-
+    // »ñÈ¡ÆÁÄ»¿É¼ûÇøÓò´óÐ¡£¬ÓÃÓÚÊÊÅä²¼¾Ö
     Size visibleSize = Director::getInstance()->getVisibleSize();
 
-    // 1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É« (ï¿½ï¿½ï¿½É«)
+        // ========== 1. ´´½¨±³¾° (Éî»ÒÉ«) ==========
+    // Color4B(R, G, B, A) - Éî»Ò (50, 50, 50)
     auto bg = LayerColor::create(Color4B(50, 50, 50, 255));
     this->addChild(bg);
 
-    // 2. ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½
+    // ========== 2. ´´½¨±êÌâÎÄ±¾ ==========
+    // Ê¹ÓÃÏµÍ³×ÖÌå Arial£¬×ÖºÅ 60
     auto label = Label::createWithSystemFont("SELECT LEVEL", "Arial", 60);
     label->setPosition(Vec2(visibleSize.width / 2, visibleSize.height * 0.7));
     this->addChild(label);
 
-    // 3. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½Ø¡ï¿½ï¿½ï¿½Å¥
-    // ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ Cocos ï¿½Ô´ï¿½ï¿½ï¿½ Button ï¿½Ø¼ï¿½
-    // ï¿½ï¿½ï¿½ï¿½1: ï¿½ï¿½ï¿½ï¿½Í¼Æ¬, ï¿½ï¿½ï¿½ï¿½2: ï¿½ï¿½ï¿½ï¿½Í¼Æ¬, ï¿½ï¿½ï¿½ï¿½3: ï¿½ï¿½ï¿½ï¿½Í¼Æ¬ (ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½Õ´ï¿½)
+    // ========== 3. ´´½¨"µÚ1¹Ø"°´Å¥ ==========
+    // ÕâÀïÊ¹ÓÃ Cocos ×Ô´øµÄ Button ¿Ø¼þ
+    // create() ´´½¨Ò»¸ö¿Õ°´Å¥£¨ÎÞ±³¾°Í¼£©£¬½öÏÔÊ¾ÎÄ×Ö
     auto btnLevel1 = Button::create();
     btnLevel1->setTitleText("Level 1");
     btnLevel1->setTitleFontSize(50);
     btnLevel1->setTitleColor(Color3B::WHITE);
-    // ï¿½ï¿½Ò»ï¿½ï¿½ï¿½òµ¥µÄ±ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ß·Å´ï¿½ß´ï¿½ï¿½Ô±ï¿½ï¿½ï¿½
+
     btnLevel1->setScale(2.0f);
     btnLevel1->setPosition(Vec2(visibleSize.width / 2, visibleSize.height * 0.5));
 
-    // ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     btnLevel1->addClickEventListener([this](Ref* sender) {
-        this->onLevelSelected(1); // ï¿½ï¿½ï¿½ï¿½Ø¿ï¿½ ID = 1
+        this->onLevelSelected(1); // Ó²±àÂë£ºÑ¡Ôñ¹Ø¿¨ ID = 1
         });
 
     this->addChild(btnLevel1);
@@ -40,10 +66,18 @@ bool LevelSelectView::init() {
     return true;
 }
 
+/**
+ * @brief ´¦Àí¹Ø¿¨Ñ¡ÔñÊÂ¼þ
+ * @param levelId ÓÃ»§Ñ¡ÔñµÄ¹Ø¿¨ID
+ * 
+ * @details 
+ * 1. ´òÓ¡ÈÕÖ¾£¬·½±ãµ÷ÊÔ
+ * 2. Î¯ÍÐ GameController Æô¶¯ÓÎÏ·Á÷³Ì
+ * 3. GameController::startGame »á¸ºÔð´´½¨ÐÂ³¡¾°²¢ÇÐ»»£¬±¾³¡¾°½«±»Ïú»Ù
+ */
 void LevelSelectView::onLevelSelected(int levelId) {
     CCLOG("UI: User selected Level %d", levelId);
-
-    // ï¿½ï¿½ï¿½ï¿½ GameController ï¿½Ä¾ï¿½Ì¬ï¿½ï¿½Ú¿ï¿½Ê¼ï¿½ï¿½Ï·
-    // GameController ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â³ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ replaceScene
+    // µ÷ÓÃ GameController µÄ¾²Ì¬¹¤³§·½·¨Æô¶¯ÓÎÏ·
+    // GameController »á×Ô¶¯¼ÓÔØ level_1.json ²¢ÇÐ»»³¡¾°
     GameController::startGame(levelId);
 }

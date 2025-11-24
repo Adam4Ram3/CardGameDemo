@@ -1,18 +1,17 @@
 #ifndef GAME_CONSTS_H
 #define GAME_CONSTS_H
 
-// »¨É«ÀàÐÍ
+// ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
 enum class CardSuitType
 {
     CST_NONE = -1,
-    CST_CLUBS = 0,      // Ã·»¨
-    CST_DIAMONDS = 1,   // ·½¿é
-    CST_HEARTS = 2,     // ºìÌÒ
-    CST_SPADES = 3,     // ºÚÌÒ
+    CST_CLUBS = 0,      //æ¢…èŠ±
+    CST_DIAMONDS = 1,   //æ–¹å—
+    CST_HEARTS = 2,     //çº¢æ¡ƒ
+    CST_SPADES = 3,     //é»‘æ¡ƒ
     CST_NUM_CARD_SUIT_TYPES
 };
 
-// µãÊýÀàÐÍ (0-based)
 // Ace=0, Two=1, ..., Ten=9, Jack=10, Queen=11, King=12
 enum class CardFaceType
 {
@@ -33,11 +32,11 @@ enum class CardFaceType
     CFT_NUM_CARD_FACE_TYPES
 };
 
-// ¿¨ÅÆ×´Ì¬
+// ç‰Œæ­£é¢æœä¸Šè¿˜æ˜¯åé¢æœä¸Š
 enum class CardState {
-    FACE_DOWN,  // ±³Ãæ
-    FACE_UP,    // ÕýÃæ
-    REMOVED     // ÒÑÒÆ³ý
+    FACE_DOWN, 
+    FACE_UP,   
+    REMOVED    
 };
 
 #endif // GAME_CONSTS_H
