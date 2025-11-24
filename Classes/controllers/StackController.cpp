@@ -106,7 +106,7 @@ void StackController::initView(GameView* gameView) {
             Vec2 finalPos = _stockPos + Vec2(offsetX, offsetY);
             // 备用牌：覆盖，放在左侧 Stock 位置
             GameLogicService::applyMove(card.get(),finalPos, offsetIndex);
-            GameLogicService::applyStateChange(card.get(), CardState::FACE_DOWN);
+            GameLogicService::applyStateChange(card.get(), CardState::FACE_UP);
             offsetIndex++;
         }
 
@@ -123,53 +123,90 @@ void StackController::initView(GameView* gameView) {
     }
 }
 
-/**
- * @brief 处理卡牌点击事件
- * @param cardId 被点击的卡牌ID
- * @return bool 是否成功处理了点击
- * 
- * @details 逻辑判断：
- * 1. 检查卡牌是否存在
- * 2. **抽牌逻辑**：
- *    - 如果点击的是备用堆（Stock）中的覆盖牌（FACE_DOWN）
- *    - 记录 Undo 操作（记录当前状态和之前的 TopCard）
- *    - 将牌翻开（FACE_UP）
- *    - 调用主控制器执行移动动画（移到底牌堆 Active）
- *    - 主控制器会自动更新 TopCard
- */
+///**
+// * @brief 处理卡牌点击事件
+// * @param cardId 被点击的卡牌ID
+// * @return bool 是否成功处理了点击
+// * 
+// * @details 逻辑判断：
+// * 1. 检查卡牌是否存在
+// * 2. **抽牌逻辑**：
+// *    - 如果点击的是备用堆（Stock）中的覆盖牌（FACE_DOWN）
+// *    - 记录 Undo 操作（记录当前状态和之前的 TopCard）
+// *    - 将牌翻开（FACE_UP）
+// *    - 调用主控制器执行移动动画（移到底牌堆 Active）
+// *    - 主控制器会自动更新 TopCard
+// */
+//bool StackController::handleCardClick(int cardId) {
+//    auto card = _gameModel->getCardById(cardId);
+//    if (!card) return false;
+//
+//    // 【修改】判定逻辑升级
+//    // 1. 是 Stack 区域的牌 (OriginPos == Zero)
+//    // 2. 是背面状态 (FACE_DOWN)
+//    // 3. (可选) 它是当前最上面的一张备用牌 (防止点到下面盖着的牌)
+//    //    但在 Cocos 的触摸机制里，上面的 View 会优先吞噬触摸，所以这里简化判断即可
+//
+//    bool isStockCard = card->getOriginPosition().equals(Vec2::ZERO);
+//    bool isFaceDown = (card->getState() == CardState::FACE_DOWN);
+//
+//    // 只有位于备用堆且覆盖的牌可以点击（抽牌操作）
+//    if (isStockCard && isFaceDown) {
+//
+//        // 1. 记录撤销命令（关键：记录移动前的状态）
+//        // 参数：卡牌ID, 原始位置, 当前底牌ID, 原始状态, 原始Z序
+//        UndoCommand cmd(card->getId(), card->getPosition(), _topStackCard->getId(), card->getState(), card->getZIndex());
+//        _undoManager->pushCommand(cmd);
+//
+//        // 2. 更新数据状态：翻开
+//        GameLogicService::applyStateChange(card.get(), CardState::FACE_UP);
+//
+//        // 3. 委托主控制器执行移动逻辑（包含动画和更新 TopCard）
+//        if (_mainController) {
+//            _mainController->performMoveCard(card, _activePos);
+//        }
+//        return true;
+//    }
+//    return false;
+//}
 bool StackController::handleCardClick(int cardId) {
     auto card = _gameModel->getCardById(cardId);
     if (!card) return false;
 
-    // 【修改】判定逻辑升级
-    // 1. 是 Stack 区域的牌 (OriginPos == Zero)
-    // 2. 是背面状态 (FACE_DOWN)
-    // 3. (可选) 它是当前最上面的一张备用牌 (防止点到下面盖着的牌)
-    //    但在 Cocos 的触摸机制里，上面的 View 会优先吞噬触摸，所以这里简化判断即可
+    // 1. 判定它是否属于 Stack 组 (根据原始位置判断)
+    bool isStackCard = card->getOriginPosition().equals(Vec2::ZERO);
 
-    bool isStockCard = card->getOriginPosition().equals(Vec2::ZERO);
-    bool isFaceDown = (card->getState() == CardState::FACE_DOWN);
+    // 2. 判定它不是当前右边的底牌
+    // (我们只允许点击左边的备用牌，右边的牌是用来被动接收的)
+    bool isNotActiveTop = (card != _topStackCard);
 
-    // 只有位于备用堆且覆盖的牌可以点击（抽牌操作）
-    if (isStockCard && isFaceDown) {
+    // 【核心修改】
+    // 这里的判断条件现在只看位置，不看正反面 (CardState)。
+    // 无论它是 FACE_UP 还是 FACE_DOWN，只要在备用堆里，就可以点。
+    if (isStackCard && isNotActiveTop) {
 
-        // 1. 记录撤销命令（关键：记录移动前的状态）
-        // 参数：卡牌ID, 原始位置, 当前底牌ID, 原始状态, 原始Z序
-        UndoCommand cmd(card->getId(), card->getPosition(), _topStackCard->getId(), card->getState(), card->getZIndex());
+        // 1. 记录撤销命令
+        UndoCommand cmd(
+            card->getId(),
+            card->getPosition(),
+            _topStackCard->getId(),
+            card->getState(),
+            card->getZIndex()
+        );
         _undoManager->pushCommand(cmd);
 
-        // 2. 更新数据状态：翻开
+        // 2. 强制设为正面 (不管原来是啥，飞过去后必须是正面)
         GameLogicService::applyStateChange(card.get(), CardState::FACE_UP);
 
-        // 3. 委托主控制器执行移动逻辑（包含动画和更新 TopCard）
+        // 3. 飞到右边
         if (_mainController) {
             _mainController->performMoveCard(card, _activePos);
         }
         return true;
     }
+
     return false;
 }
-
 /**
  * @brief 更新当前底牌堆顶部的卡牌引用
  * @param card 新的顶部卡牌

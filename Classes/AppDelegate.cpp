@@ -23,7 +23,6 @@
  ****************************************************************************/
 
 #include "AppDelegate.h"
-#include "HelloWorldScene.h"
 #include "controllers/GameController.h"
 #include "views/LevelSelectView.h" // ����ͷ�ļ�
 // #define USE_AUDIO_ENGINE 1
@@ -93,7 +92,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // 设定设计分辨率为 1080x2080
     // FIXED_WIDTH 策略：保持宽度固定为 1080，高度根据屏幕比例自动缩放
     glview->setDesignResolutionSize(1080, 2080, ResolutionPolicy::FIXED_WIDTH);
-    director->setDisplayStats(true);
+    director->setDisplayStats(false);
     director->setAnimationInterval(1.0f / 60);
 
     // 创建关卡选择场景 (LevelSelectView)
